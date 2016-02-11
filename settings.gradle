@@ -1,0 +1,4 @@
+include 'echo-core'
+include 'echo-admin'
+include 'echo-server'
+include 'echo-client'

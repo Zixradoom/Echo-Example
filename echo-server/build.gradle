@@ -1,0 +1,77 @@
+/*
+The MIT License (MIT)
+
+Copyright (c) [2016] [Anthony Joseph Simon]
+
+Permission is hereby granted, free of charge, to any person obtaining a copy
+of this software and associated documentation files (the "Software"), to deal
+in the Software without restriction, including without limitation the rights
+to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+copies of the Software, and to permit persons to whom the Software is
+furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all
+copies or substantial portions of the Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+SOFTWARE.
+ */
+
+apply plugin: 'java'
+apply plugin: 'maven'
+apply plugin: 'application'
+
+targetCompatibility = 1.8
+sourceCompatibility = 1.8
+version = '0.0.1-SNAPSHOT'
+group = 'com.s2d'
+mainClassName = 'com.simonsoftwaredesign.example.echo.server.EchoServerApp'
+
+repositories {
+  mavenCentral()
+}
+
+configurations {
+  webContainer
+}
+
+dependencies {
+  compile project(':echo-core')
+  compile group: 'org.eclipse.jetty', name: 'jetty-server', version: '9.3.7.v20160115'
+  compile group: 'org.eclipse.jetty', name: 'jetty-webapp', version: '9.3.7.v20160115'
+  
+  webContainer project(path: ':echo-admin', configuration: 'warApp')
+}
+
+task copyWebApps(dependsOn: configurations.webContainer, type: Copy) {
+  from { configurations.webContainer.collect { it } }
+  // I don't like how this is hard coded
+  // but I am not sure how to fix it
+  into 'src/main/dist/webapp'
+}
+
+installDist.dependsOn copyWebApps
+distZip.dependsOn copyWebApps
+distTar.dependsOn copyWebApps
+
+javadoc.options.links("http://docs.oracle.com/javase/8/docs/api/")
+
+task sourcesJar(type: Jar, dependsOn: classes) {
+  classifier = 'sources'
+  from sourceSets.main.allSource
+}
+
+task javadocJar(type: Jar, dependsOn: javadoc) {
+  classifier = 'javadoc'
+  from javadoc.destinationDir
+}
+
+artifacts {
+  archives sourcesJar
+  archives javadocJar
+}

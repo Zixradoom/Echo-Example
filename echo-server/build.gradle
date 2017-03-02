@@ -48,16 +48,15 @@ dependencies {
   webContainer project(path: ':echo-admin', configuration: 'warApp')
 }
 
-task copyWebApps(dependsOn: configurations.webContainer, type: Copy) {
-  from { configurations.webContainer.collect { it } }
-  // I don't like how this is hard coded
-  // but I am not sure how to fix it
-  into 'src/main/dist/webapp'
+distributions {
+  main {
+    contents {
+      into ('webapp') {
+        from { project.configurations.webContainer }
+      }
+    }
+  }
 }
-
-installDist.dependsOn copyWebApps
-distZip.dependsOn copyWebApps
-distTar.dependsOn copyWebApps
 
 javadoc.options.links("http://docs.oracle.com/javase/8/docs/api/")
 
